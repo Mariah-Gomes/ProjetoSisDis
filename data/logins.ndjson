@@ -7,3 +7,5 @@
 {"user":"alice","timestamp":1762818889726}
 {"user":"leonardo","timestamp":1762989863603}
 {"username":"alice","timestamp":1763071996143,"type":"login"}
+{"username":"alice","timestamp":1763235950303,"type":"login"}
+{"user":"alice","timestamp":1763237260192,"type":"login"}
