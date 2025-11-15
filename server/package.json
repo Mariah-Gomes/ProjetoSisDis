@@ -1,0 +1,8 @@
+{
+  "type": "module",
+  "dependencies": {
+    "zeromq": "^6.0.0",
+    "fs-extra": "^11.2.0",
+    "msgpackr": "^1.11.2"
+  }
+}

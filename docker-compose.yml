@@ -1,0 +1,41 @@
+services:
+  broker:
+    build: ./broker
+    container_name: sd-broker
+    ports:
+      - "5555:5555"
+      - "5556:5556"
+    networks: [sd-net]
+
+  proxy:
+    build: ./proxy
+    container_name: sd-proxy
+    ports:
+      - "5557:5557"
+      - "5558:5558"
+    networks: [sd-net]
+
+  server:
+    build: ./server
+    container_name: sd-server
+    depends_on: [broker, proxy]
+    volumes:
+      - ./data:/app/data
+    networks: [sd-net]
+
+  client:
+    build: ./client
+    container_name: sd-client
+    depends_on: [broker, proxy, server]
+    stdin_open: true
+    tty: true
+    networks: [sd-net]
+
+  bot:
+    build: ./bot
+    depends_on: [broker]
+    networks: [sd-net]
+
+networks:
+  sd-net:
+    driver: bridge
