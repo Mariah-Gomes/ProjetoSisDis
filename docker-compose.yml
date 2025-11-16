@@ -42,7 +42,7 @@ services:
   client:
     build: ./client
     container_name: sd-client
-    depends_on: [broker, proxy, server]
+    depends_on: [broker, proxy, server1, server2, server3]
     stdin_open: true
     tty: true
     networks: [sd-net]
