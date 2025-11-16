@@ -86,3 +86,15 @@ Ao realizar o `git clone` desse repositório abrir o terminal do `VS Code` com o
 ```
 CTRL + SHIFT + '
 ```
+
+#### PASSO 4
+Ao abrir o terminal limpo no VS Code digitar o seguinte comando
+```
+docker compose build
+```
+
+#### PASSO 5
+Quando acabar de buildar os conteiners rodar o seguinte comando
+```
+docker compose run
+```
