@@ -96,5 +96,5 @@ docker compose build
 #### PASSO 5
 Quando acabar de buildar os conteiners rodar o seguinte comando
 ```
-docker compose run
+docker compose run --rm -it client
 ```
