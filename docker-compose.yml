@@ -20,7 +20,7 @@ services:
     container_name: sd-server1
     depends_on: [broker, proxy]
     volumes:
-      - ./data/server1:/app/data
+      - ./data:/app/data
     networks: [sd-net]
 
   server2:
@@ -28,7 +28,7 @@ services:
     container_name: sd-server2
     depends_on: [broker, proxy]
     volumes:
-      - ./data/server2:/app/data
+      - ./data:/app/data
     networks: [sd-net]
 
   server3:
@@ -36,7 +36,7 @@ services:
     container_name: sd-server3
     depends_on: [broker, proxy]
     volumes:
-      - ./data/server3:/app/data
+      - ./data:/app/data
     networks: [sd-net]
 
   client:
