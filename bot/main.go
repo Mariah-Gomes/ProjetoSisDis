@@ -9,37 +9,46 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
+// Definição da estrutura do Envelope
 type Envelope struct {
 	Service string      `msgpack:"service"`
 	Data    interface{} `msgpack:"data"`
 }
 
-func nowMillis() int64 { return time.Now().UnixMilli() }
+func nowMillis() int64 {
+	return time.Now().UnixMilli()
+}
 
-func sendAndRecv(req *zmq.Socket, env Envelope) error {
-	msg, err := msgpack.Marshal(&env)
+func sendAndRecv(requisicao *zmq.Socket, envio Envelope) error {
+	msg, err := msgpack.Marshal(&envio) // Empacotar o envelope em MessagePack
+	// Verificação de erro no empacotamento
 	if err != nil {
 		return err
 	}
-	_, err = req.SendBytes(msg, 0)
+
+	_, err = requisicao.SendBytes(msg, 0) //Enviar pelo socket REQ
+	// Verifição de erro no envio
 	if err != nil {
 		return err
 	}
-	_, err = req.RecvBytes(0) // ignoramos conteúdo da resposta
+
+	_, err = requisicao.RecvBytes(0) // Receber/esperar a resposta
 	return err
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
-	username := fmt.Sprintf("bot_%04d", rand.Intn(10000))
+	rand.Seed(time.Now().UnixNano())                      // Inicializa o gerador de números aleatórios
+	username := fmt.Sprintf("bot_%04d", rand.Intn(10000)) // Gera um nome de usuário aleatório
 
-	req, _ := zmq.NewSocket(zmq.REQ)
-	defer req.Close()
-	req.Connect("tcp://broker:5555")
+	requisicao, _ := zmq.NewSocket(zmq.REQ) // Cria um socket REQ
+	defer requisicao.Close()                // Fecha o socket ao final da função main
+	requisicao.Connect("tcp://broker:5555") // Conecta ao broker
 
-	// login
-	_ = sendAndRecv(req, Envelope{
+	// Primeiro passo: login
+	// Chama a função e ignora o erro
+	_ = sendAndRecv(requisicao, Envelope{
 		Service: "login",
+		// Cria um dicionário (tipo das chaves e valores)
 		Data: map[string]interface{}{
 			"username":  username,
 			"timestamp": nowMillis(),
@@ -49,7 +58,7 @@ func main() {
 	// garante canais
 	channels := []string{"general", "random", "news"}
 	for _, ch := range channels {
-		_ = sendAndRecv(req, Envelope{
+		_ = sendAndRecv(requisicao, Envelope{
 			Service: "channel",
 			Data:    map[string]interface{}{"name": ch},
 		})
@@ -60,7 +69,7 @@ func main() {
 	for {
 		ch := channels[rand.Intn(len(channels))]
 		msg := fmt.Sprintf("[%s] msg %d de %s", ch, i, username)
-		_ = sendAndRecv(req, Envelope{
+		_ = sendAndRecv(requisicao, Envelope{
 			Service: "publish",
 			Data: map[string]interface{}{
 				"channel":   ch,
