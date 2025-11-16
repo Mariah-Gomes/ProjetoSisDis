@@ -31,7 +31,12 @@ services:
     tty: true
     networks: [sd-net]
 
-  bot:
+  bot1:
+    build: ./bot
+    depends_on: [broker]
+    networks: [sd-net]
+
+  bot2:
     build: ./bot
     depends_on: [broker]
     networks: [sd-net]
