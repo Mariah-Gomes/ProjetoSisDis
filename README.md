@@ -75,4 +75,14 @@ Decisão de projeto: evitar inconsistências entre mensagens próximas no tempo.
 -->
 
 ## Explicação de como rodar o projeto
-#### PASSO 1: 
+#### PASSO 1
+Precisa ter o Docker `Desktop instalado` em seu computador e iniciar o programa
+
+#### PASSO 2
+Precisa ter o `VS Code` instalado em seu computar e iniciar o programa
+
+#### PASSO 3
+Ao realizar o `git clone` desse repositório abrir o terminal do `VS Code` com o seguinte comando:
+```
+CTRL + SHIFT + '
+```
