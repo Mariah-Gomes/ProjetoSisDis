@@ -15,12 +15,28 @@ services:
       - "5558:5558"
     networks: [sd-net]
 
-  server:
+  server1:
     build: ./server
-    container_name: sd-server
+    container_name: sd-server1
     depends_on: [broker, proxy]
     volumes:
-      - ./data:/app/data
+      - ./data/server1:/app/data
+    networks: [sd-net]
+
+  server2:
+    build: ./server
+    container_name: sd-server2
+    depends_on: [broker, proxy]
+    volumes:
+      - ./data/server2:/app/data
+    networks: [sd-net]
+
+  server3:
+    build: ./server
+    container_name: sd-server3
+    depends_on: [broker, proxy]
+    volumes:
+      - ./data/server3:/app/data
     networks: [sd-net]
 
   client:
