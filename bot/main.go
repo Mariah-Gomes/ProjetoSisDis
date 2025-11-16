@@ -55,21 +55,23 @@ func main() {
 		},
 	})
 
-	// garante canais
-	channels := []string{"general", "random", "news"}
+	// Segundo passo: canais
+	channels := []string{"general", "random", "news"} // Lista de canais
+	// Escolhe um item da lista
 	for _, ch := range channels {
-		_ = sendAndRecv(requisicao, Envelope{
+		_ = sendAndRecv(requisicao, Envelope{ // envia o envelope
 			Service: "channel",
 			Data:    map[string]interface{}{"name": ch},
 		})
 	}
 
+	// Terceiro passo: publicação
 	// loop de publicação
 	i := 0
 	for {
-		ch := channels[rand.Intn(len(channels))]
-		msg := fmt.Sprintf("[%s] msg %d de %s", ch, i, username)
-		_ = sendAndRecv(requisicao, Envelope{
+		ch := channels[rand.Intn(len(channels))]                 // Escolhe um canal aleatório
+		msg := fmt.Sprintf("[%s] msg %d de %s", ch, i, username) // Cria a mensagem
+		_ = sendAndRecv(requisicao, Envelope{                    // envia o envelope
 			Service: "publish",
 			Data: map[string]interface{}{
 				"channel":   ch,
