@@ -98,3 +98,24 @@ Quando acabar de buildar os conteiners rodar o seguinte comando
 ```
 docker compose run --rm -it client
 ```
+
+## Consistência e Replicação
+Para garantir que todos os servidores mantenham o mesmo estado global dos dados, utilizamos um volume Docker compartilhado, montado da seguinte forma para todos os servidores:
+```
+volumes:
+  - ./data:/app/data
+```
+
+Isso faz com que todas as instâncias (server1, server2, server3) leiam e escrevam no mesmo diretório físico do host.
+
+#### Consequentemente:
+- Todos os registros (logins.ndjson, channels.ndjson, publications.ndjson, etc.) são salvos em um único local.
+- Qualquer servidor que receba uma requisição grava no mesmo arquivo.
+- Qualquer servidor pode responder a consultas de histórico — pois todos acessam os mesmos dados.
+- Se um servidor falhar, nenhum dado é perdido, pois o volume compartilhado continua preservando tudo.
+
+#### Justificativa da Escolha
+- Evita alterações complexas no código do servidor;
+- Garante consistência forte, pois todos acessam o mesmo armazenamento;
+- Reduz a necessidade de sincronização entre servidores;
+- É totalmente compatível com containers Docker;
