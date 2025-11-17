@@ -175,9 +175,9 @@ func main() {
 			env := Envelope{
 				Service: "channel",
 				Data: map[string]interface{}{
-					"channel":   ch,
+					//"channel":   ch,
 					"timestamp": nowMillis(),
-					"clock":     tick(), 
+					"clock":     tick(),
 				},
 			}
 			resp, err := sendAndRecv(req, env)
@@ -194,11 +194,11 @@ func main() {
 				continue
 			}
 			env := Envelope{
-				Service: "channel", 
+				Service: "channel",
 				Data: map[string]interface{}{
-					"channel": ch, 
+					"channel":   ch,
 					"timestamp": nowMillis(),
-					"clock":     tick(),		
+					"clock":     tick(),
 				},
 			}
 			resp, err := sendAndRecv(req, env)
@@ -210,11 +210,11 @@ func main() {
 
 		case "3":
 			env := Envelope{
-				Service: "channels", 
+				Service: "channels",
 				Data: map[string]interface{}{
 					"timestamp": nowMillis(),
 					"clock":     tick(),
-				}
+				},
 			}
 			resp, err := sendAndRecv(req, env)
 			if err != nil {
