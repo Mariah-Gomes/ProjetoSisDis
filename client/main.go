@@ -23,6 +23,22 @@ func nowMillis() int64 {
 	return time.Now().UnixMilli()
 }
 
+// Relógio lógico local do cliente
+var logicalClock int64 = 0
+
+// Incrementa o relógio antes de enviar uma mensagem
+func tick() int64 {
+	logicalClock++
+	return logicalClock
+}
+
+// Atualiza o relógio lógico ao receber um clock remoto (vamos usar depois)
+func updateClock(remote int64) {
+	if remote > logicalClock {
+		logicalClock = remote
+	}
+}
+
 // Mensagem
 func sendAndRecv(socket *zmq.Socket, env Envelope) (string, error) {
 	msgBytes, err := msgpack.Marshal(&env) // Empacota o envelope em MessagePack
@@ -126,6 +142,7 @@ func main() {
 		Data: map[string]interface{}{
 			"user":      user,
 			"timestamp": nowMillis(),
+			"clock":     tick(),
 		},
 	}
 	// Envia o envelope de login e trata a resposta
@@ -155,7 +172,14 @@ func main() {
 		opStr := ask("", reader)
 		switch opStr {
 		case "1":
-			env := Envelope{Service: "users", Data: map[string]interface{}{"timestamp": nowMillis()}}
+			env := Envelope{
+				Service: "channel",
+				Data: map[string]interface{}{
+					//"channel":   ch,
+					"timestamp": nowMillis(),
+					"clock":     tick(),
+				},
+			}
 			resp, err := sendAndRecv(req, env)
 			if err != nil {
 				fmt.Println("Erro:", err)
@@ -169,7 +193,14 @@ func main() {
 				fmt.Println("Canal não pode ser vazio.")
 				continue
 			}
-			env := Envelope{Service: "channel", Data: map[string]interface{}{"channel": ch, "timestamp": nowMillis()}}
+			env := Envelope{
+				Service: "channel",
+				Data: map[string]interface{}{
+					"channel":   ch,
+					"timestamp": nowMillis(),
+					"clock":     tick(),
+				},
+			}
 			resp, err := sendAndRecv(req, env)
 			if err != nil {
 				fmt.Println("Erro:", err)
@@ -178,7 +209,13 @@ func main() {
 			fmt.Println("Resposta:", resp)
 
 		case "3":
-			env := Envelope{Service: "channels", Data: map[string]interface{}{"timestamp": nowMillis()}}
+			env := Envelope{
+				Service: "channels",
+				Data: map[string]interface{}{
+					"timestamp": nowMillis(),
+					"clock":     tick(),
+				},
+			}
 			resp, err := sendAndRecv(req, env)
 			if err != nil {
 				fmt.Println("Erro:", err)
@@ -205,6 +242,7 @@ func main() {
 					"channel":   ch,
 					"message":   msg,
 					"timestamp": nowMillis(),
+					"clock":     tick(),
 				},
 			}
 			resp, err := sendAndRecv(req, env)
@@ -224,6 +262,7 @@ func main() {
 					"dst":       dst,
 					"message":   msg,
 					"timestamp": nowMillis(),
+					"clock":     tick(),
 				},
 			}
 			resp, err := sendAndRecv(req, env)

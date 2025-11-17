@@ -23,6 +23,19 @@ await Promise.all([
   fs.ensureFile(DMS),
 ]);
 
+let logicalClock = 0;
+
+function tick() {
+  logicalClock++;
+  return logicalClock;
+}
+
+function updateClock(remote) {
+  if (typeof remote === "number" && remote > logicalClock) {
+    logicalClock = remote;
+  }
+}
+
 async function appendNdjson(filePath, obj) {
   await fs.appendFile(filePath, JSON.stringify(obj) + "\n");
 }
@@ -65,41 +78,46 @@ function publishTopic(topic, payloadObj) {
 }
 
 for await (const [msgBytes] of rep) {
-  let env;
-  try {
-    env = unpack(msgBytes); // Request em MessagePack vindo do client
-  } catch (e) {
-    console.error("[server] msgpack inválido no REQ:", e?.message);
-    await rep.send(pack({
-      service: "error",
-      data: { status: "erro", message: "msgpack inválido" },
-    }));
-    continue;
-  }
+    let env;
+    try {
+        env = unpack(msgBytes); // Request em MessagePack vindo do client
+    } catch (e) {
+        console.error("[server] msgpack inválido no REQ:", e?.message);
+        await rep.send(pack({
+        service: "error",
+        data: { status: "erro", message: "msgpack inválido" },
+        }));
+        continue;
+    }
 
-  const { service, data } = env || {};
-  console.log("[server] REQ:", service, data);
+    const { service, data } = env || {};
 
-  let reply = { service, data: { status: "ok", timestamp: Date.now() } };
+    if (data && typeof data.clock === "number") { // Atualiza relógio lógico
+        updateClock(data.clock);
+    }
 
-  try {
-    switch (service) {
+    console.log("[server] REQ:", service, data);
+
+    let reply = { service, data: { status: "ok", timestamp: Date.now() } };
+
+    try {
+        switch (service) {
       // =========================================================
       // login: Data { user, timestamp }
       // =========================================================
-      case "login": {
-        const user = String(data?.user || data?.username || "").trim();
-        if (!user) throw new Error("user obrigatório");
-        const rec = {
-          user,
-          timestamp: Number(data?.timestamp) || Date.now(),
-          type: "login",
-        };
-        await appendNdjson(LOGINS, rec);
-        reply.data.message = "Login registrado";
-        reply.data.user = user;
-        break;
-      }
+        case "login": {
+            const user = String(data?.user || data?.username || "").trim();
+            if (!user) throw new Error("user obrigatório");
+            const rec = {
+            user,
+            timestamp: Number(data?.timestamp) || Date.now(),
+            type: "login",
+            };
+            await appendNdjson(LOGINS, rec);
+            reply.data.message = "Login registrado";
+            reply.data.user = user;
+            break;
+        }
 
       // =========================================================
       // users: lista usuários que já fizeram login
@@ -220,5 +238,12 @@ for await (const [msgBytes] of rep) {
     };
   }
 
-  await rep.send(pack(reply)); // resposta em MessagePack
+    if (!reply.data) {
+        reply.data = {};
+    }
+    if (typeof reply.data.timestamp !== "number") {
+        reply.data.timestamp = Date.now();
+    }
+    reply.data.clock = tick();
+    await rep.send(pack(reply)); // resposta em MessagePack
 }

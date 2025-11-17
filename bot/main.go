@@ -19,6 +19,22 @@ func nowMillis() int64 {
 	return time.Now().UnixMilli()
 }
 
+// Relógio lógico do bot
+var logicalClock int64 = 0
+
+// Incrementa o relógio antes de enviar qualquer mensagem
+func tick() int64 {
+	logicalClock++
+	return logicalClock
+}
+
+// Atualiza o relógio lógico a partir de um clock remoto
+func updateClock(remote int64) {
+	if remote > logicalClock {
+		logicalClock = remote
+	}
+}
+
 func sendAndRecv(requisicao *zmq.Socket, envio Envelope) error {
 	msg, err := msgpack.Marshal(&envio) // Empacotar o envelope em MessagePack
 	// Verificação de erro no empacotamento
@@ -52,6 +68,7 @@ func main() {
 		Data: map[string]interface{}{
 			"username":  username,
 			"timestamp": nowMillis(),
+			"clock":     tick(),
 		},
 	})
 
@@ -61,7 +78,11 @@ func main() {
 	for _, ch := range channels {
 		_ = sendAndRecv(requisicao, Envelope{ // envia o envelope
 			Service: "channel",
-			Data:    map[string]interface{}{"name": ch},
+			Data: map[string]interface{}{
+				"name":      ch,
+				"timestamp": nowMillis(),
+				"clock":     tick(),
+			},
 		})
 	}
 
@@ -78,6 +99,7 @@ func main() {
 				"author":    username,
 				"message":   msg,
 				"timestamp": nowMillis(),
+				"clock":     tick(),
 			},
 		})
 		i++
